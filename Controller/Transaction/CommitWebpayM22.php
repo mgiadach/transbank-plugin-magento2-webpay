@@ -22,6 +22,7 @@ class CommitWebpayM22 extends \Magento\Framework\App\Action\Action
         "NC" => "N cuotas sin interés",
     ];
     protected $configProvider;
+    protected $orderSender;
     
     public function __construct(
         \Magento\Framework\App\Action\Context $context, \Magento\Checkout\Model\Cart $cart,
@@ -29,7 +30,8 @@ class CommitWebpayM22 extends \Magento\Framework\App\Action\Action
         \Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory,
         \Magento\Framework\Controller\Result\RawFactory $resultRawFactory,
         \Transbank\Webpay\Model\Config\ConfigProvider $configProvider,
-        \Transbank\Webpay\Model\WebpayOrderDataFactory $webpayOrderDataFactory
+        \Transbank\Webpay\Model\WebpayOrderDataFactory $webpayOrderDataFactory,
+        \Magento\Sales\Model\Order\Email\Sender\OrderSender $orderSender
     ) {
         
         parent::__construct($context);
@@ -41,6 +43,7 @@ class CommitWebpayM22 extends \Magento\Framework\App\Action\Action
         $this->messageManager = $context->getMessageManager();
         $this->configProvider = $configProvider;
         $this->webpayOrderDataFactory = $webpayOrderDataFactory;
+        $this->orderSender = $orderSender;
         $this->log = new LogHandler();
     }
     
@@ -87,6 +90,8 @@ class CommitWebpayM22 extends \Magento\Framework\App\Action\Action
                     $order->setState($orderStatus)->setStatus($orderStatus);
                     $order->addStatusToHistory($order->getStatus(), json_encode($transactionResult));
                     $order->save();
+
+                    $this->orderSender->send($order);
                     
                     $this->checkoutSession->getQuote()->setIsActive(false)->save();
                     
