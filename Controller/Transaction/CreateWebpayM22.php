@@ -94,10 +94,11 @@ class CreateWebpayM22 extends \Magento\Framework\App\Action\Action
             $returnUrl = $baseUrl . $config['URL_RETURN'];
             $finalUrl = $baseUrl . $config['URL_FINAL'];
             $quoteId = $quote->getId();
-            $orderId = $this->getOrderId();
+            $orderId = $order->getEntityId();
+            $buyOrder = $order->getIncrementId();
             
             $transbankSdkWebpay = new TransbankSdkWebpay($config);
-            $response = $transbankSdkWebpay->initTransaction($grandTotal, $quoteId, $orderId, $returnUrl, $finalUrl);
+            $response = $transbankSdkWebpay->initTransaction($grandTotal, $quoteId, $buyOrder, $returnUrl, $finalUrl);
             
             $dataLog = ['grandTotal' => $grandTotal, 'quoteId' => $quoteId, 'orderId' => $orderId];
             $message = "<h3>Esperando pago con Webpay</h3><br>" . json_encode($dataLog);
